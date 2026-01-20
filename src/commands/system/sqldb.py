@@ -12,7 +12,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import os
 from fastapi import Request
 from core.registry import registry
 from core.commands import Command
@@ -24,29 +23,6 @@ DB_PATH = "data/orion.db"
 
 db = sqlite3.connect(DB_PATH)
 cursor = db.cursor()
-
-# if tables dont exist make DEMO and ACCOUNTS tables for testing
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS DEMO (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    value TEXT NOT NULL
-);
-""")
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS ACCOUNTS (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    password TEXT NOT NULL
-);
-""")
-db.commit()
-
-cursor.execute("INSERT INTO DEMO (name, value) VALUES ('example1', 'value1')")
-cursor.execute("INSERT INTO DEMO (name, value) VALUES ('example2', 'value2')")
-cursor.execute("INSERT INTO ACCOUNTS (username, password) VALUES ('admin', 'admin')")
-cursor.execute("INSERT INTO ACCOUNTS (username, password) VALUES ('user', 'password')")
-db.commit()
 
 def auth_check(request: Request):
     logger.info(m="Checking auth for SQLDB command", caller="SQLDB_Command")
@@ -120,5 +96,3 @@ registry.register(Command(
     mode="cli",
     parse_mode="raw",
 ))
-
-# E.G db.sql SELECT * FROM DEMO
