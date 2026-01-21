@@ -26,12 +26,14 @@ users = {
         "roles": ["admin", "user", "db"],
         "email": "admin@orion",
         "telephone": "101",
+        "changeme": True
     },
     "user": {
         "password": "user",
         "roles": ["user"],
         "email": "user@orion",
         "telephone": "111",
+        "changeme": True
     }
 }
 
@@ -63,6 +65,47 @@ async def login_page(request: Request):
         msg="Please login with your credentials.",
     )
 
+
+@router.get("/change_password")
+async def change_password_page(request: Request, error: str | None = None):
+    error = request.query_params.get("error", "")
+    return p.form(
+        request,
+        title="CHANGE PASSWORD",
+        action="/change_password",
+        fields=[
+            {"name": "new_password", "type": "password"},
+            {"name": "confirm_password", "type": "password"},
+        ],
+        msg="A password change has been requested for your account. Please enter a new password.",
+        error=error
+    )
+
+
+@router.post("/change_password")
+async def change_password_submit(
+    request: Request,
+    new_password: str = Form(...),
+    confirm_password: str = Form(...)
+):
+    user = request.cookies.get("user")
+    if not user or user not in users:
+        return RedirectResponse(url="/login", status_code=303)
+
+    if new_password != confirm_password:
+        return RedirectResponse(
+            url="/change_password?error=Passwords+do+not+match.",
+            status_code=303
+        )
+
+    users[user]["password"] = new_password
+    users[user]["changeme"] = False
+
+    response = RedirectResponse(url="/", status_code=303)
+    response.set_cookie("user", user, httponly=True)
+    return response
+
+
 @router.post("/login")
 async def login_submit(
     request: Request,
@@ -71,6 +114,10 @@ async def login_submit(
 ):
     user = users.get(username)
     if user and user["password"] == password:
+        if user.get("changeme", True):
+            response = RedirectResponse(url="/change_password", status_code=303)
+            response.set_cookie("user", username, httponly=True)
+            return response
         response = RedirectResponse(url="/", status_code=303)
         response.set_cookie("user", username, httponly=True)
         return response
