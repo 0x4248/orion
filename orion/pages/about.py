@@ -22,7 +22,6 @@ from orion.core.commands import Command
 
 router = APIRouter()
 
-# The mascot looks like Wheatley from Portal 2, Because hes cute!
 mascot_image_path = "./orion/static/mascot.png"
 with open(f"{mascot_image_path}", "rb") as f:
     mascot_image_data = base64.b64encode(f.read()).decode("utf-8")
@@ -46,10 +45,6 @@ async def about_page(request: Request):
 <p style="text-align: center">{LEGAL}</p>
 <pre>
 
-Version: 0.8.4
-Engine: OrionEngine
-Online Users: 1
-© 2026 0x4248
 </pre>
 """
     )

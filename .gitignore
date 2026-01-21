@@ -1,0 +1,17 @@
+**/__pycache__/
+**/*.py[cod]
+**/*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+__pypackages__/
+*.log
+*.sqlite3
+*.db
+*.env
+*.venv
+.env/
+.venv/
