@@ -21,6 +21,7 @@ from orion.core import auth, console
 from orion.core import page as p
 from commands.system import manual
 from config.modules import MODULES
+from config.rules.preload import PRELOAD_TASKS
 
 def load_commands():
     for module_path in MODULES:
@@ -50,6 +51,10 @@ for name in (
     log.addHandler(handler)
     log.propagate = False
 
+
+for target in PRELOAD_TASKS:
+    console.logger.info(m=f"Preloading: {target.__name__}", caller="Preloader")
+    target()
 
 app = FastAPI()
 
