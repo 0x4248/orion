@@ -31,9 +31,9 @@ This design is hevily inspired by discord bots and the way they handle commands 
 # Ping pong
 
 from fastapi import Request # Standard for FastAPI request handling
-from core.registry import registry # Import the global command registry
-from core.commands import Command # Import the Command class to define new commands
-from core import page # Import page rendering utilities
+from orion.core.registry import registry # Import the global command registry
+from orion.core.commands import Command # Import the Command class to define new commands
+from orion.core import page # Import page rendering utilities
 
 
 def ping(request: Request, name: str = ""):
