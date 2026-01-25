@@ -1,6 +1,6 @@
 <h1 align="center">Orion</h1>
 <p align="center">
-    <img src="orion/src/static/mascot_hd.png" width="250px" style="w">
+    <img src="orion/static/mascot_hd.png" width="250px" style="w">
 </p>
 
 Orion is a command driven extendable system interface built on top of FastAPI. It exposes a unified execution model where the same command can be invoked via a terminal like CLI over HTTP, a form based UI, and many more to come.
