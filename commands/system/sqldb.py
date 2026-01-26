@@ -16,9 +16,9 @@ from fastapi import Request
 from orion.core.registry import registry
 from orion.core.commands import Command
 from orion.core import page
-import sqlite3
-from orion.core.auth import users as auth_users
+from orion.core.auth import role_check
 from orion.core.console import logger
+import sqlite3
 
 DB_PATH = "data/orion.db"
 
@@ -26,11 +26,10 @@ db = sqlite3.connect(DB_PATH)
 cursor = db.cursor()
 
 def auth_check(request: Request):
-    logger.info(m="Checking auth for SQLDB command", caller="SQLDB_Command")
-    user = request.cookies.get('user', 'None')
-    if not user:
+    user = request.cookies.get('user', None)
+    if user is None:
         return False
-    elif 'admin' not in auth_users[user]["roles"] and 'db' not in auth_users[user]["roles"]:
+    elif not (role_check(user, "admin") or role_check(user, "db")):
         return False
     return True
 

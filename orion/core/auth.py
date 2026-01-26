@@ -16,28 +16,54 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import RedirectResponse
 from orion.core import page as p
 from orion.core import console
+from orion.core.console import logger
+import hashlib
 router = APIRouter()
 
-# ---- users DB (placeholder) ----
+from orion.core.jsondb import JsonDatabase  # adjust import as needed
 
-users = {
-    "admin": {
-        "password": "admin",
-        "roles": ["admin", "user", "db"],
-        "email": "admin@orion",
-        "telephone": "101",
-        "changeme": True
-    },
-    "user": {
-        "password": "user",
-        "roles": ["user"],
-        "email": "user@orion",
-        "telephone": "111",
-        "changeme": True
-    }
-}
+users_db = JsonDatabase("data/auth.json")
 
-# ---- middleware ----
+def hashing_process(password: str) -> str:
+    logger.info(m="Hashing password", caller="Auth_HashingProcess")
+    # HACK: This is a custom hashing process for Orion, why? well SHA256 is easy
+    # brute force. I plan on using seeds.
+    part_a = hashlib.sha256(password.encode()).hexdigest()
+    part_b = hashlib.sha256(password[::-1].encode()).hexdigest()
+    combined = part_a + part_b
+    final_hash = hashlib.sha256(combined.encode()).hexdigest()
+    return final_hash
+
+# initialize on first run
+if not users_db.is_initialized() or "users" not in users_db.data:
+    users_db.set("users", {
+        "admin": {
+            "password": hashing_process("admin"),
+            "roles": ["admin", "user", "db"],
+            "email": "admin@orion",
+            "telephone": "101",
+            "changeme": True
+        },
+        "user": {
+            "password": hashing_process("user"),
+            "roles": ["user"],
+            "email": "user@orion",
+            "telephone": "111",
+            "changeme": True
+        }
+    })
+
+
+def role_check(user: str, role: str) -> bool:
+    logger.info(m=f"Checking role '{role}' for user '{user}'", caller="Auth_RoleCheck")
+    users = users_db.data["users"]
+    if user in users and role in users[user]["roles"]:
+        return True
+    return False
+
+
+
+
 
 async def auth_middleware(request: Request, call_next):
     console.logger.info(m=f"{request.method} {request.url.path} from {request.client.host}. USER: {request.cookies.get('user', 'Anonymous')}", caller="HTTP_Middleware")
@@ -45,8 +71,10 @@ async def auth_middleware(request: Request, call_next):
         return await call_next(request)
 
     user = request.cookies.get("user")
-    if user in users:
-        return await call_next(request)
+    users = users_db.data["users"]
+    if user and user in users:
+        response = await call_next(request)
+        return response
 
     return RedirectResponse(url="/login", status_code=303)
 
@@ -89,6 +117,7 @@ async def change_password_submit(
     confirm_password: str = Form(...)
 ):
     user = request.cookies.get("user")
+    users = users_db.data["users"]
     if not user or user not in users:
         return RedirectResponse(url="/login", status_code=303)
 
@@ -98,7 +127,7 @@ async def change_password_submit(
             status_code=303
         )
 
-    users[user]["password"] = new_password
+    users[user]["password"] = hashing_process(new_password)
     users[user]["changeme"] = False
 
     response = RedirectResponse(url="/", status_code=303)
@@ -112,8 +141,9 @@ async def login_submit(
     username: str = Form(...),
     password: str = Form(...)
 ):
+    users = users_db.data["users"]
     user = users.get(username)
-    if user and user["password"] == password:
+    if user and user["password"] == hashing_process(password):
         if user.get("changeme", True):
             response = RedirectResponse(url="/change_password", status_code=303)
             response.set_cookie("user", username, httponly=True)
