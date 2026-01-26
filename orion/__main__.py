@@ -77,7 +77,7 @@ app.include_router(command.router)
 app.include_router(about.router)
 app.include_router(manual.router)
 
-console.logger.info(m=app.router.routes)
+console.logger.info(m=str(app.router.routes))
 
 @app.exception_handler(404)
 async def not_found(request: Request, exc):
