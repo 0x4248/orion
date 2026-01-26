@@ -67,6 +67,14 @@ Orion by default feels like a full blown system with:
 
 *But you can make it a blank system by removing all the files in the `commands` folder and start from scratch.*
 
+
+## Requirements
+
+**For the core system to run:**
+- Python 3.10 or higher (due to typing features)
+- FastAPI
+- Uvicorn
+
 ## TODO
 
 - [ ] HTTP**S**
