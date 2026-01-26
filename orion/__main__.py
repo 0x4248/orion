@@ -11,7 +11,17 @@
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
+print(r"""
+   ____  _____  _____ ____  _   _ 
+  / __ \|  __ \|_   _/ __ \| \ | |
+ | |  | | |__) | | || |  | |  \| |
+ | |  | |  _  /  | || |  | | . ` |
+ | |__| | | \ \ _| || |__| | |\  |
+  \____/|_|  \_\_____\____/|_| \_|
+""")
+import datetime
+print(f"Orion System init called at {datetime.datetime.now().isoformat()}")
+print("")
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 
