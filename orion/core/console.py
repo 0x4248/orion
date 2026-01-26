@@ -14,8 +14,6 @@
 
 import datetime
 from typing import Dict
-import traceback
-
 from orion.core.page import message
 
 global logger
@@ -56,8 +54,8 @@ class Logger:
         if m is None:
             m = "No message provided"
         if self.bark:
-            print(f"[{level}] {caller}: {m}")
-        log_id = log_db.add_entry(level, caller, m)
+            print(f"{level}\t-> {caller}: {m}")
+        log_id = self.log_db.add_entry(level, caller, m)
         return log_id
     
     def debug(self, caller: str | None = None, m: str | None = None) -> int:
