@@ -12,33 +12,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import threading
 import datetime
-import time
 
 from fastapi import Request, UploadFile
 from orion.core.registry import registry
 from orion.core.commands import Command
 from orion.core import page
-
-
-global heartbeats_database
-heartbeats_database = {
-    "id": [],
-    "timestamp": [],
-    "status": []
-}
-
-def heartbeat():
-    heartbeat_id = 0
-    while True:
-        heartbeats_database["id"].append(heartbeat_id)
-        heartbeats_database["timestamp"].append(datetime.datetime.now().isoformat())
-        heartbeats_database["status"].append("alive")
-        heartbeat_id += 1
-        if not threading.main_thread().is_alive():
-            break
-        time.sleep(0.75)
+from orion.core.health import heartbeats_database
 
 def calculate_average_heartbeat_bpm():
     if len(heartbeats_database["timestamp"]) < 2:
@@ -81,10 +61,6 @@ registry.register(Command(
     mode="cli",
 ))
 
-
-
-heart = threading.Thread(target=heartbeat, daemon=True)
-heart.start()
 
 MOD_META = {
     "name": "System Heartbeats",

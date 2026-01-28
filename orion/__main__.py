@@ -32,6 +32,7 @@ from orion.core import page as p
 from commands.system import manual
 from config.modules import MODULES
 from config.rules.preload import PRELOAD_TASKS
+from config import globals
 
 def load_commands():
     for module_path in MODULES:
@@ -105,8 +106,8 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         app,
-        host="0.0.0.0",
-        port=8000,
+        host=globals.ORION_HOST,
+        port=globals.ORION_PORT,
         log_config=None,
         access_log=True,
     )
