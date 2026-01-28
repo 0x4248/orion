@@ -12,7 +12,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-PYTHON=/opt/homebrew/bin/python3 
+PYTHON=python3
+
+# HACK: If on macOS, use Homebrew Python path because 3.9 is not supported
+ifeq ($(shell uname), Darwin)
+	PYTHON=/opt/homebrew/bin/python3
+endif
+
 
 S := @
 
