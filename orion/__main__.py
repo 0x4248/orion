@@ -36,7 +36,7 @@ from config import globals
 
 def load_commands():
     for module_path in MODULES:
-        console.logger.info(m=f"Loading module: {module_path}", caller="ModuleLoader")
+        console.logger.info(m=f"Loading module: {module_path}", caller="Main.ModuleLoader")
         __import__(module_path)
 
 load_commands()
@@ -69,7 +69,7 @@ for target in PRELOAD_TASKS:
 
 app = FastAPI()
 
-console.logger.info(m="Starting Orion Web Application")
+console.logger.info(m="Including routers and middleware...", caller="Main")
 
 app.middleware("http")(auth.auth_middleware)
 
@@ -77,8 +77,6 @@ app.include_router(auth.router)
 app.include_router(command.router)
 app.include_router(about.router)
 app.include_router(manual.router)
-
-console.logger.info(m=str(app.router.routes))
 
 @app.exception_handler(404)
 async def not_found(request: Request, exc):
@@ -104,6 +102,8 @@ async def favicon():
 
 if __name__ == "__main__":
     import uvicorn
+    console.logger.info(m="Orion setup almost complete, starting uvicorn server...", caller="Main")
+    console.logger.info(m=f"Running Orion on {globals.ORION_HOST}:{globals.ORION_PORT}", caller="Main")
     uvicorn.run(
         app,
         host=globals.ORION_HOST,
