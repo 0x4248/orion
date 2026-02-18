@@ -27,19 +27,24 @@ from fastapi.responses import FileResponse
 
 from orion.core.logbridge import logBridge
 from orion.pages import command, about, console
+from orion.pages import menu as menu_pages
 from orion.core import auth, console
 from orion.core import page as p
 from commands.system import manual
 from config.modules import MODULES
+from config.plugins import ENABLED_MODULES
 from config.rules.preload import PRELOAD_TASKS
 from config import globals
+from config.plugins import ENABLED_MODULES
+from orion.core.plugins import PluginManager
 
-def load_commands():
-    for module_path in MODULES:
-        console.logger.info(m=f"Loading module: {module_path}", caller="Main.ModuleLoader")
-        __import__(module_path)
+# Load modules via the PluginManager which supports enable/disable controls.
+pm_modules = PluginManager(MODULES, ENABLED_MODULES)
+console.logger.info(m="Loading modules via PluginManager", caller="Main.ModuleLoader")
+pm_modules.load_all()
+for info in pm_modules.list():
+    console.logger.info(m=f"Plugin: {info.path} enabled={info.enabled} loaded={info.loaded}", caller="Main.PluginStatus")
 
-load_commands()
 
 import logging
 
@@ -77,6 +82,7 @@ app.include_router(auth.router)
 app.include_router(command.router)
 app.include_router(about.router)
 app.include_router(manual.router)
+app.include_router(menu_pages.router)
 
 @app.exception_handler(404)
 async def not_found(request: Request, exc):
@@ -99,6 +105,19 @@ async def server_error(request: Request, exc):
 @app.get("/favicon.ico")
 async def favicon():
     return FileResponse("./static/mascot.ico")
+
+@app.get("/")
+async def index(request: Request):
+    return p.static(
+        request,
+        "ORION SYSTEM",
+        "<h1>Welcome to Orion System</h1>"
+        "<a href='/command'>[ RUN COMMAND ]</a><br>"
+        "<a href='/menus'>[ OPEN MENUS ]</a><br>"
+        "<a href='/search_forms'>[ OPEN A FORM ]</a><br>"
+        "<a href='/about'>[ ABOUT SYSTEM ]</a><br>"
+        "<a href='/logout'>[ LOGOUT ]</a><br>"
+    )
 
 if __name__ == "__main__":
     import uvicorn

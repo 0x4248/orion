@@ -19,7 +19,8 @@
 MODULES = [
     "commands.system.open",
     "commands.system.heartbeats",
-    "commands.testing.demo",
+    "plugins.demo",
+    "plugins.mail",
     "commands.echo",
     "commands.system.sqldb"
 ]

@@ -24,11 +24,17 @@ router = APIRouter()
 
 @router.get("/command")
 async def command_page(request: Request):
-    lines = [
-        f"[{c.name}] - {c.summary}"
-        for c in registry.all()
-        if c.supports_cli()
-    ]
+    # lines = [
+    #     f"[{c.name}] - {c.summary}"
+    #     for c in registry.all()
+    #     if c.supports_cli()
+    # ]
+    lines = []
+    for c in registry.all():
+        if c.supports_cli():
+            lines.append(f"[{c.name}] - {c.summary}")
+        if c.supports_ui() and not c.supports_cli():
+            lines.append(f"[{c.name}] (<span style='color:lime;'>UI</span>) - {c.summary}")
     return p.static(
         request,
         title="COMMAND",
@@ -60,6 +66,9 @@ async def command_submit(request: Request, command: str = Form(...)):
     name, *args = parts
     cmd = registry.get(name)
 
+    if cmd.supports_ui():
+        return RedirectResponse(f"/command/{name}", 303)
+    
     if not cmd or not cmd.supports_cli():
         did_you_mean = find_similar_commands(name)
         if did_you_mean:
@@ -67,10 +76,7 @@ async def command_submit(request: Request, command: str = Form(...)):
         else:
             hint = "no similar commands found"
         return p.message(request, "UNKNOWN", error=f"'{name}' is not a valid CLI command <br>Did you mean? {hint}")
-
-    if cmd.supports_ui() and not args and cmd.form_fields:
-        return RedirectResponse(f"/command/{name}", 303)
-
+    
     if cmd.parse_mode == "raw":
         raw_args = command[len(name):].lstrip()
         args = [raw_args]
@@ -83,6 +89,10 @@ async def command_form(request: Request, name: str):
     cmd = registry.get(name)
     if not cmd or not cmd.supports_ui():
         return RedirectResponse("/command", 303)
+    
+    if not cmd.form_fields:
+        # No form fields defined, just run the command
+        return await dispatcher.dispatch(cmd.handler, request)
 
     return p.form(
         request,
