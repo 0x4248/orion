@@ -45,6 +45,27 @@ def manual_page(request: Request, name: str = ""):
 <a href="javascript:history.back()" style="text-align:center">[ BACK ]</a>
                        """, buttons=page.with_nav(page.DEFAULT_NAV))
 
+
+def man_list(request: Request, startswith_filter: str = ""):
+    page_entries = ""
+    entries = manual_registry.all()
+    for entry in entries:
+        if startswith_filter == "":
+            pass
+        else:
+            if not entry.name.startswith(startswith_filter.lower()):
+                continue
+        entry.name = entry.name.upper()
+        page_entries += f"<li><a href=\"/man/{entry.name.lower()}\">{entry.name}</a></li>"
+    if page_entries == "":
+        page_entries = "<li><i>No manual entries found.</i></li>"
+    return page.static(request, "MANUAL INDEX", html=f"""
+        <h1 style="text-align: center;">MANUAL INDEX</h1>
+        <ul>
+            {page_entries}
+        </ul>
+    """, buttons=page.with_nav(page.DEFAULT_NAV))
+
 registry.register(Command(
     name="man",
     handler=manual_page,
@@ -52,6 +73,16 @@ registry.register(Command(
     mode="both",
     form_fields=[
         {"name": "name", "type": "text"},
+    ],
+))
+
+registry.register(Command(
+    name="man.list",
+    handler=man_list,
+    summary="List all manual pages",
+    mode="both",
+    form_fields=[
+        {"name": "startswith_filter", "type": "text"},
     ],
 ))
 
